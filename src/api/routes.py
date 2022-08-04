@@ -54,9 +54,14 @@ def create_user():
         }
     if user: return jsonify(data), 201
 
+   
+@api.route('/profile', methods=['GET'])
+@jwt_required()
+def get_profile():
+    id = get_jwt_identity()
+    user=User.query.get(id)
     
-    
-
+    return jsonify(user.serialize()), 200
 
 @api.route('/hello', methods=['POST', 'GET'])
 def handle_hello():
