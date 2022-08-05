@@ -1,8 +1,9 @@
 const getState = ({ getStore, getActions, setStore }) => {
-  let Apiurl =
-    "https://3001-jorgereboll-sistemadeau-sst5jib9zru.ws-us59.gitpod.io";
   return {
     store: {
+      ApiUrl:
+        "https://3001-jorgereboll-sistemadeau-sst5jib9zru.ws-us59.gitpod.io",
+      currentUser: null,
       message: null,
       demo: [
         {
@@ -22,12 +23,56 @@ const getState = ({ getStore, getActions, setStore }) => {
       exampleFunction: () => {
         getActions().changeColor(0, "green");
       },
+      getLogout: () => {
+        if (sessionStorage.getItem("currentUser")) {
+          sessionStorage.removeItem("currentUser");
+          setStore({ currentUser: null });
+        }
+      },
+      getRegister: async (info = { email: "", username: "", password: "" }) => {
+        try {
+          const { ApiUrl } = getStore();
+          const response = await fetch(`${ApiUrl}/api/user`, {
+            method: "POST",
+            body: JSON.stringify(info),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await response.json();
+
+          return data;
+        } catch (error) {
+          console.log("Error loading message from backend", error);
+        }
+      },
+      getLogin: async (info = { email: "", password: "" }) => {
+        try {
+          // fetching data from the backend
+          const { ApiUrl } = getStore();
+          const response = await fetch(`${ApiUrl}/api/login`, {
+            method: "POST",
+            body: JSON.stringify(info),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+          const data = await response.json();
+          if (data.access_token) {
+            setStore({ currentUser: data });
+            sessionStorage.setItem("currentUser", JSON.stringify(data));
+          }
+          return data;
+        } catch (error) {
+          console.log("Error loading message from backend", error);
+        }
+      },
 
       getMessage: async () => {
         try {
           // fetching data from the backend
-          const resp = await fetch(Apiurl + "/api/login");
-          const data = await resp.json();
+          const response = await fetch(ApiUrl + "/api/login");
+          const data = await response.json();
           setStore({ message: data.message });
           // don't forget to return something, that is how the async resolves
           return data;
